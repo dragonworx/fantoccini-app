@@ -1,0 +1,14 @@
+/* .container {
+  position: absolute;
+  left: 0;
+  top: 0;
+} */
+
+* {
+  box-sizing: content-box;
+}
+
+body {
+  font-family: monospace;
+  margin: 0;
+}

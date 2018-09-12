@@ -1,0 +1,11 @@
+{
+  "name": "public",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^16.4.2",
+    "react-dom": "^16.4.2",
+    "socket.io-client": "^2.1.1"
+  }
+}
