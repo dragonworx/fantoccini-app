@@ -1,16 +1,31 @@
-import { Project } from 'fantoccini';
+import { Project, Sprite, Scene, color } from 'fantoccini';
 
 const project = new Project();
-const sprite = project.newSprite();
-project.addSprite(sprite);
+const scene1 = new Scene('scene1', project);
+const scene2 = new Scene('scene2', project);
 
-sprite.x.channel.addKeyframe(1000, 100);
-sprite.x.channel.addKeyframe(2000, 200);
-sprite.x.channel.addKeyframe(4000, 300);
+const sprite1 = new Sprite(scene1, {
+  bgFill: color(255, 0, 0)
+});
 
-sprite.rotation.channel.addKeyframe(1000, 15);
-sprite.rotation.channel.addKeyframe(3000, 45);
+const sprite2 = new Sprite(scene2, {
+  bgFill: color(0, 255, 0)
+});
+
+scene1.addSprite(sprite1);
+scene2.addSprite(sprite2);
+
+sprite1.x.channel.addKeyframe(1000, 100);
+sprite1.x.channel.addKeyframe(2000, 200);
+
+// todo: give Scene local time? so start keyframes at 0?
+sprite2.rotation.channel.addKeyframe(3000, 5);
+sprite2.rotation.channel.addKeyframe(4000, 45);
 
 project.timeline.play();
 
-console.log(project);
+project.currentSceneName.value = 'scene1'
+
+setTimeout(() => project.currentSceneName.value = 'scene2', 3000);
+
+window['project'] = project;
