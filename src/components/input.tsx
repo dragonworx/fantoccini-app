@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Component, EventHandler } from '../axial';
+import { Component, axis } from '../axial';
 
 export interface InputComponent_Props {
   label?: string;
@@ -8,6 +8,6 @@ export interface InputComponent_Props {
 
 export class InputComponent extends Component<InputComponent_Props> {
   render () {
-    return <label>{this.$.label}<input type="text" defaultValue={this.$.text} /></label>;
+    return <label data-axis={axis('input', this)}>{this.$.label}<input type="text" defaultValue={this.$.text} /></label>;
   }
 }

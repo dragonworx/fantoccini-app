@@ -8,5 +8,5 @@ document.body.appendChild(container);
 let c = 0;
 
 ReactDOM.render((
- <FormComponent title="the form" onClick={({ $ }) => console.log("!!!")} />
+ <FormComponent title="the form" onClick={({ $ }) => $.select('form').title = 'foo'} />
 ), container);
