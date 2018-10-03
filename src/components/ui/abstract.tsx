@@ -1,11 +1,18 @@
 import * as React from 'react';
-import { AbstractModel } from '../../models';
+import {
+  AbstractModel,
+  ButtonModel,
+} from '../../models';
+
+const Models = {
+  ButtonModel,
+};
 
 export interface AbstractComponentState {
   // todo...
 };
 
-export class AbstractComponent extends React.Component<any, AbstractComponentState> {
+export class AbstractComponent<Props> extends React.Component<Props, AbstractComponentState> {
   static Model: typeof AbstractModel;
 
   model: any;
@@ -13,7 +20,8 @@ export class AbstractComponent extends React.Component<any, AbstractComponentSta
   constructor (props) {
     super(props);
 
-    const Model = (this as any).__proto__.constructor.Model;
+    const modelName = (this as any).__proto__.constructor.name.replace(/Component$/, 'Model');
+    const Model = Models[modelName];
     const model: AbstractModel = Model.create(props);
     model.addListener((key, value) => {
       console.log('!', key, value);

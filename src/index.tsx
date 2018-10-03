@@ -6,5 +6,5 @@ const container = document.createElement('div');
 document.body.appendChild(container);
 
 ReactDOM.render((
- <ButtonComponent></ButtonComponent> 
+ <ButtonComponent text="abc"></ButtonComponent> 
 ), container);
