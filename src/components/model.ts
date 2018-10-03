@@ -14,6 +14,7 @@ export class AbstractModel {
     this.state = {
       ...props
     };
+    this.init();
   }
 
   addListener (handler: Handler) {
@@ -43,7 +44,7 @@ export class AbstractModel {
     }
 
     for (let key in this.state) {
-      console.log(`"${key}": ${JSON.stringify(this[key])}`);
+      console.log(`init: "${key}": ${this[key]}`);
     }
   }
 

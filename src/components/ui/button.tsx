@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AbstractComponent, Handler } from './abstract';
+import { AbstractComponent, Handler } from '../component';
 
 export interface ButtonComponentProps {
   text?: string;

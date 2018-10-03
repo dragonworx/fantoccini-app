@@ -1,12 +1,5 @@
 import * as React from 'react';
-import {
-  AbstractModel,
-  ButtonModel,
-} from '../../models';
-
-const Models = {
-  ButtonModel,
-};
+import { AbstractModel } from './model';
 
 export interface AbstractComponentState {
   // todo...
@@ -20,9 +13,7 @@ export class AbstractComponent<Props> extends React.Component<Props, AbstractCom
   constructor (props) {
     super(props);
 
-    const modelName = (this as any).__proto__.constructor.name.replace(/Component$/, 'Model');
-    const Model = Models[modelName];
-    const model: AbstractModel = Model.create(props);
+    const model = new AbstractModel(props);
     model.addListener((key, value) => {
       console.log(`on: "${key}": ${JSON.stringify(value)}`);
       this.setState({
@@ -37,6 +28,9 @@ export class AbstractComponent<Props> extends React.Component<Props, AbstractCom
   }
 
   emit (fn) {
+    if (!fn) {
+      return null;
+    }
     return (e) => fn({ ...e, model: this.model });
   }
 }

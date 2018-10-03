@@ -8,5 +8,5 @@ document.body.appendChild(container);
 let c = 0;
 
 ReactDOM.render((
- <ButtonComponent text="abc" onClick={({ model }) => model.text = c++}></ButtonComponent> 
+ <ButtonComponent text="abc" onClick={({ model }) => model.text = c++} />
 ), container);
