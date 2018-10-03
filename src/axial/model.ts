@@ -8,7 +8,6 @@ export class AbstractModel {
   constructor (props) {
     const self: any = this;
     const Class: any = self.__proto__.constructor;
-    console.log(`=> ${Class.name}`);
     this.listeners = [];
     this.defaults = props;
     this.state = {
@@ -41,10 +40,6 @@ export class AbstractModel {
           }
         }
       });
-    }
-
-    for (let key in this.state) {
-      console.log(`init: "${key}": ${this[key]}`);
     }
   }
 

@@ -1,13 +1,13 @@
 import * as React from 'react';
-import { AbstractComponent, EventHandler } from '../axial';
+import { Component, EventHandler } from '../axial';
 
 export interface ButtonComponentProps {
   text?: string;
   onClick?: EventHandler;
 }
 
-export class ButtonComponent extends AbstractComponent<ButtonComponentProps> {
+export class ButtonComponent extends Component<ButtonComponentProps> {
   render () {
-    return <button onClick={this.emit(this.props.onClick)}>{this.model.text}</button>;
+    return <button onClick={this.emit(this.props.onClick)}>{this.$.text}</button>;
   }
 }

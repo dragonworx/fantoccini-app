@@ -1,26 +1,25 @@
 import * as React from 'react';
 import { AbstractModel } from './model';
 
-export interface AbstractComponentState {
+export interface ComponentState {
   // todo...
 };
 
-export class AbstractComponent<Props> extends React.Component<Props, AbstractComponentState> {
+export class Component<Props> extends React.Component<Props, ComponentState> {
   static Model: typeof AbstractModel;
 
-  model: any;
+  $: any;
 
   constructor (props) {
     super(props);
 
     const model = new AbstractModel(props);
     model.addListener((key, value) => {
-      console.log(`on: "${key}": ${JSON.stringify(value)}`);
       this.setState({
         [key]: value,
       })
     });
-    this.model = model;
+    this.$ = model;
   }
 
   render() {
@@ -31,7 +30,7 @@ export class AbstractComponent<Props> extends React.Component<Props, AbstractCom
     if (!fn) {
       return null;
     }
-    return (e) => fn({ ...e, model: this.model });
+    return (e) => fn({ ...e, $: this.$ });
   }
 }
 
