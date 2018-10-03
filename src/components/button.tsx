@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { AbstractComponent, Handler } from '../component';
+import { AbstractComponent, EventHandler } from '../axial';
 
 export interface ButtonComponentProps {
   text?: string;
-  onClick?: Handler;
+  onClick?: EventHandler;
 }
 
 export class ButtonComponent extends AbstractComponent<ButtonComponentProps> {

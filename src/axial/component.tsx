@@ -35,4 +35,4 @@ export class AbstractComponent<Props> extends React.Component<Props, AbstractCom
   }
 }
 
-export type Handler = (e: any) => void;
+export type EventHandler = (e: any) => void;

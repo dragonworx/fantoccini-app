@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom'
-import { ButtonComponent } from './components/ui';
+import { ButtonComponent } from './components';
 
 const container = document.createElement('div');
 document.body.appendChild(container);

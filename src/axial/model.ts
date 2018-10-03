@@ -1,9 +1,9 @@
-export type Handler = (key: string, value: any, previousValue: any) => void
+export type ModelChangeHandler = (key: string, value: any, previousValue: any) => void
 
 export class AbstractModel {
   protected defaults?: any;
   public state: any;
-  private listeners: Handler[];
+  private listeners: ModelChangeHandler[];
 
   constructor (props) {
     const self: any = this;
@@ -17,7 +17,7 @@ export class AbstractModel {
     this.init();
   }
 
-  addListener (handler: Handler) {
+  addListener (handler: ModelChangeHandler) {
     this.listeners.push(handler);
   }
 
