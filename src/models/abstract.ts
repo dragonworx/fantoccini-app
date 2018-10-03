@@ -5,14 +5,14 @@ export class AbstractModel {
   public state: any;
   private listeners: Handler[];
 
-  constructor (defaults: {} = {}) {
+  constructor (props) {
     const self: any = this;
     const Class: any = self.__proto__.constructor;
-    console.log(`New "${Class.name}"`);
+    console.log(`=> ${Class.name}`);
     this.listeners = [];
-    this.defaults = defaults;
+    this.defaults = props;
     this.state = {
-      ...defaults
+      ...props
     };
   }
 
@@ -23,8 +23,6 @@ export class AbstractModel {
   init () {
     const defaults = this.defaults;
     for (let key in defaults) {
-      // console.log(`"${key}": ${JSON.stringify(defaults[key])}`);
-
       Object.defineProperty(this, key, {
         get () {
           return this.state.hasOwnProperty(key)
@@ -34,15 +32,18 @@ export class AbstractModel {
         set (value) {
           const previousValue = this.state[key];
           this.state[key] = value;
+          if (typeof value === 'undefined') {
+            delete this.state[key];
+          }
           for (let handler of this.listeners) {
-            handler(key, value, previousValue);
+            handler(key, this[key], previousValue);
           }
         }
       });
+    }
 
-      for (let key in this.state) {
-        console.log('[' + key + '] ' + this[key]);
-      }
+    for (let key in this.state) {
+      console.log(`"${key}": ${JSON.stringify(this[key])}`);
     }
   }
 

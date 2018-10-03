@@ -24,7 +24,10 @@ export class AbstractComponent<Props> extends React.Component<Props, AbstractCom
     const Model = Models[modelName];
     const model: AbstractModel = Model.create(props);
     model.addListener((key, value) => {
-      console.log('!', key, value);
+      console.log(`on: "${key}": ${JSON.stringify(value)}`);
+      this.setState({
+        [key]: value,
+      })
     });
     this.model = model;
   }
@@ -33,10 +36,9 @@ export class AbstractComponent<Props> extends React.Component<Props, AbstractCom
     return <div className="container"></div>;
   }
 
-  componentDidCatch(error, info) {
-    // Display fallback UI
-    // this.setState({ hasError: true });
-    // You can also log the error to an error reporting service
-    console.log(error, info);
+  emit (fn) {
+    return (e) => fn({ ...e, model: this.model });
   }
 }
+
+export type Handler = (e: any) => void;
