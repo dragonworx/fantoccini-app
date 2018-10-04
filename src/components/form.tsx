@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Component, EventHandler, axis } from '../axial';
+import { Component, EventHandler, Axis } from '../axial';
 import { ButtonComponent } from './button';
 import { InputComponent } from './input';
 
@@ -11,11 +11,11 @@ export interface FormComponentProps {
 export class FormComponent extends Component<FormComponentProps> {
   render () {
     return (
-      <div data-axis={axis('form', this)}>
+      <Axis id="form" component={this}>
         <h1>{ this.$.title }</h1>
         <InputComponent label="info" text="input value" />
         <ButtonComponent text="Submit" onClick={this.emit(this.props.onClick)} />
-      </div>
+      </Axis>
     );
   }
 }
