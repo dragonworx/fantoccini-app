@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Component, EventHandler, Axis } from '../axial';
+import { AxialComponent, EventHandler, Scope, Export } from '../axial';
 import { ButtonComponent } from './button';
 import { InputComponent } from './input';
 
@@ -8,14 +8,21 @@ export interface FormComponentProps {
   onClick?: EventHandler;
 }
 
-export class FormComponent extends Component<FormComponentProps> {
+export class FormComponent extends AxialComponent<FormComponentProps> {
   render () {
     return (
-      <Axis id="form" component={this}>
-        <h1>{ this.$.title }</h1>
-        <InputComponent label="info" text="input value" />
-        <ButtonComponent text="Submit" onClick={this.emit(this.props.onClick)} />
-      </Axis>
+      <Scope id="form">
+        <form action="#">
+          <h1>{ this.$.title }</h1>
+          <Export id="name">
+            <InputComponent label="name" text="name" />
+          </Export>
+          <Export id="password">
+            <InputComponent label="password" text="password" />
+          </Export>
+          <ButtonComponent text={`Submit${Date.now()}`} onClick={ this.bind('onClick') } />
+        </form>
+      </Scope>
     );
   }
 }

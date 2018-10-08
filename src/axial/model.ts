@@ -1,4 +1,4 @@
-import { root, select } from '../axial';
+import { select } from '../axial';
 
 export type ModelChangeHandler = (key: string, value: any, previousValue: any) => void
 
@@ -43,10 +43,6 @@ export class AbstractModel {
         }
       });
     }
-  }
-
-  select (selector) {
-    return select(selector);
   }
 
   static create (defaults) {

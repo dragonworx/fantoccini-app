@@ -1,9 +1,10 @@
+import * as React from 'react';
+
 let lastAxis;
 let rootAxis;
 const axisPaths = {};
 
-export function enterAxis (id, component) {
-  const componentModel = component.$;
+export function enterAxis (id, componentModel) {
   if (lastAxis) {
     lastAxis.__axises[id] = componentModel;
     componentModel.__path = `${lastAxis.__path}.${id}`;
@@ -42,3 +43,6 @@ export function select (selector) {
 
 export * from './component';
 export * from './model';
+export * from './scope';
+
+export const $ = select;
