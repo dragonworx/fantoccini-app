@@ -1,0 +1,9 @@
+{
+  "type": "Instance.Product.ComponentA",
+  "data": {
+    "instance.name": "foo",
+    "instance.product.name": "bar",
+    "instance.product.environment": "dev",
+    "instance.product.component_a.prop": "xyz"
+  }
+}
