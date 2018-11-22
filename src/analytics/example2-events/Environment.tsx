@@ -4,4 +4,4 @@ export interface EnvironmentEvent {
     name?: string;
 }
 
-export class Environment extends EventScopeComponent<EnvironmentEvent> { }
+export class EnvironmentScope extends EventScopeComponent<EnvironmentEvent> { }

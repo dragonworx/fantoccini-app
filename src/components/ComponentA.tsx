@@ -1,7 +1,7 @@
 
 import * as React from 'react';
-import { currentDispatcher, EventDispatcher } from '../index';
-import { AEvent } from './EventA';
+import { currentDispatcher, EventDispatcher } from '../analytics/index';
+import { AEvent } from '../analytics/example-events/EventA';
 
 export class ComponentA extends React.Component<{}, {}> {
     dispatch: EventDispatcher<AEvent>;
