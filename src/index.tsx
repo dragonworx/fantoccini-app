@@ -1,18 +1,30 @@
-import { DomElementPuppet, Timeline } from 'fantoccini';
+/**
+ * fantoccin-app
+ */
 
-// setup test div
+import { Player, Clip } from './fantoccini';
+import { DomPuppet } from './fantoccini-dom';
+
+// create clip animation
+const clip = new Clip();
+const left = clip.addChannel('left', 0);
+left
+    .addKeyframe(1000, 100)
+    .addRelKeyframe(1000, 200)
+    .addRelKeyframe(1000, 300)
+    .addRelKeyframe(1000, 400);
+
+// create dom element
 const element = document.createElement('div');
 element.setAttribute('id', 'test');
 document.getElementById('main').appendChild(element);
 
-// mutate with animation
-const puppet = new DomElementPuppet(element);
-puppet.addKeyframe('left', 1000, 100);
-puppet.addKeyframe('left', 2000, 200);
-puppet.addKeyframe('left', 3000, 300);
-puppet.addKeyframe('left', 4000, 0);
+// create puppet
+const puppet = new DomPuppet(element);
+puppet.play(clip);
 
-// setup timeline
-const timeline = new Timeline();
-timeline.add(puppet);
-timeline.play();
+// create player
+const player = new Player();
+player.add(puppet);
+
+// console.log(left.duration);

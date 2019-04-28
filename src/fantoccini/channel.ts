@@ -1,24 +1,35 @@
 import { Keyframe } from './keyframe';
-import { Property } from './property';
 import { Easing } from './util/easing';
+import { TimelineBound } from './types';
+import { thisExpression } from '@babel/types';
 
-export class Channel<T> {
-    public keyframes: Keyframe<T>[];
+export class Channel<TypeOfChannel> implements TimelineBound {
+    public keyframes: Keyframe<TypeOfChannel>[];
     public currentIndex: number = -1;
     public loop: boolean = true;
+    private hasLooped: boolean = false;
     public interpolate: boolean = false;
+    public value: TypeOfChannel;
 
-    constructor (private readonly property: Property<T>, defaultValue?: T) {
-        const defaultVal = defaultValue ? defaultValue : property.value;
-        this.keyframes = [new Keyframe(0, defaultVal)];
+    constructor (defaultValue: TypeOfChannel) {
+        this.value = defaultValue;
+        this.keyframes = [new Keyframe(0, defaultValue)];
     }
 
-    get isEmpty () {
+    get isStatic () {
         return this.keyframes.length === 1;
     }
 
-    get firstKeyframe () {
+    get staticKeyframe () {
         return this.keyframes[0];
+    }
+
+    get firstKeyframe () {
+        return this.keyframes[1];
+    }
+
+    get currentKeyframe () {
+        return this.keyframes[this.currentIndex];
     }
 
     get lastKeyframe () {
@@ -26,27 +37,36 @@ export class Channel<T> {
         return keyframes[keyframes.length - 1];
     }
 
-    addKeyframe (timeMs: number, value: T) {
-        const keyframes = this.keyframes;
-        const keyframe = new Keyframe(timeMs, value);
-        keyframes.push(keyframe);
+    get keyframeCount () {
+        return this.keyframes.length - 1;
     }
 
-    addRelKeyframe (delayMs: number, value: T) {
-        const keyframes = this.keyframes;
-        const keyframe = new Keyframe(this.lastKeyframe.timeMs + delayMs, value);
-        keyframes.push(keyframe);
+    get duration () {
+        return this.lastKeyframe.timeMs;
+    }
+
+    addKeyframe (timeMs: number, value: TypeOfChannel) {
+        this.keyframes.push(new Keyframe(timeMs, value));
+        return this;
+    }
+
+    addRelKeyframe (deltaMs: number, value: TypeOfChannel) {
+        this.keyframes.push(new Keyframe(this.lastKeyframe.timeMs + deltaMs, value));
+        return this;
     }
 
     getKeyframeIndexAtTime (timeMs: number): number | undefined {
         const { keyframes } = this;
         const l = keyframes.length - 1;
         if (l === 0) {
+            // static
             return 0;
         }
         if (timeMs >= this.lastKeyframe.timeMs) {
+            // past last keyframe
             return l;
         }
+        // return now keyframe from all
         for (let i = 0; i < l; i++) {
             const keyframe = keyframes[i];
             const nextKeyframe = keyframes[i + 1];
@@ -56,55 +76,81 @@ export class Channel<T> {
         }
     }
 
-    get duration () {
-        return this.lastKeyframe.timeMs;
-    }
-
     currentTimeMs (timeMs: number) {
         if (this.loop) {
-            return timeMs % this.duration;
+            const duration = this.duration + this.firstKeyframe.timeMs;
+            const loopedTime = timeMs % duration;
+            this.hasLooped = loopedTime < timeMs;
+            return loopedTime;
         }
         return timeMs;
     }
 
-    seek (rawTimeMs: number) {
-        const timeMs = this.currentTimeMs(rawTimeMs);
+    seek (elapsedMs: number) {
+        const timeMs = this.currentTimeMs(elapsedMs);
         this.currentIndex = this.getKeyframeIndexAtTime(timeMs);
     }
 
-    update (rawTimeMs: number) {
-        const timeMs = this.currentTimeMs(rawTimeMs);
-        const keyframe = this.keyframes[this.currentIndex];
-        if (this.isEmpty) {
-            this.property.value = keyframe.value;
-        } else {
-            const nextKeyframe = this.keyframes[this.currentIndex + 1];
-            const duration = nextKeyframe.timeMs - keyframe.timeMs;
-            const elapsed = Math.min(1, (timeMs - keyframe.timeMs) / duration);
-            
-            if (this.interpolate && typeof keyframe.value === 'number' && typeof nextKeyframe.value === 'number') {
-                let easedElapsed = elapsed;
-                if (this.currentIndex === 0) {console.log('ease in');
-                    easedElapsed = Easing.inCubic(elapsed);
-                }
-                if (this.currentIndex === this.keyframes.length - 2) {console.log('ease out');
-                    easedElapsed = Easing.outCubic(elapsed);
-                }
-                const delta = nextKeyframe.value - keyframe.value;
-                this.property.value = (keyframe.value + (delta * easedElapsed)) as any;
+    update (elapsedMs: number) {
+        const timeMs = this.currentTimeMs(elapsedMs);
+        const currentIndex = this.currentIndex;
+        const keyframes = this.keyframes;
+        const keyframe = keyframes[currentIndex];
+        const isLastKeyframe = keyframe === this.lastKeyframe;
+        let nextKeyframe;
+        let duration = 0;
+        if (this.loop) {
+            if (isLastKeyframe) {
+                nextKeyframe = this.firstKeyframe;
+                duration = this.firstKeyframe.timeMs;
             } else {
-                this.property.value = keyframe.value;
+                nextKeyframe = keyframes[currentIndex + 1];
+                duration = nextKeyframe.timeMs - keyframe.timeMs;
             }
-    
-            if (elapsed >= 1) {
-                this.nextFrame();
+        } else {
+            nextKeyframe = isLastKeyframe ? undefined : keyframes[currentIndex + 1];
+            duration = isLastKeyframe ? 0 : nextKeyframe.timeMs - keyframe.timeMs;
+        }
+        if (this.isStatic) {
+            // static
+            this.value = keyframe.value;
+        } else {
+            // animated
+            if (nextKeyframe === undefined) {
+                // not looping (sitting)
+                this.value = keyframe.value;
+                console.log("done", currentIndex);
+                
+            } else {
+                // playing
+                const elapsed = Math.min(1, Math.abs(timeMs - keyframe.timeMs) / duration);
+                console.log(elapsed);
+                
+                if (this.interpolate && typeof keyframe.value === 'number' && typeof nextKeyframe.value === 'number') {
+                    // interpolate
+                    let easedElapsed = elapsed;
+                    if (currentIndex === 0) {console.log('ease in');
+                        easedElapsed = Easing.inCubic(elapsed);
+                    }
+                    if (currentIndex === this.keyframes.length - 2) {console.log('ease out');
+                        easedElapsed = Easing.outCubic(elapsed);
+                    }
+                    const delta = nextKeyframe.value - keyframe.value;
+                    this.value = (keyframe.value + (delta * easedElapsed)) as any;
+                } else {
+                    // no interpolation
+                    this.value = keyframe.value;
+                }
+
+                if (elapsed >= 1) {
+                    // next keyframe
+                    this.currentIndex++;
+                    if (this.currentIndex > this.keyframeCount) {
+                        this.currentIndex = 1;
+                    }
+                    console.log('currentIndex ' + this.currentIndex);
+                }
             }
         }
-    }
-
-    nextFrame () {
-        const currentIndex = this.currentIndex;
-        this.currentIndex++;
-        console.log("nextFrame - was " + currentIndex + " is " + this.currentIndex);
     }
 }

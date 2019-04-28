@@ -1,58 +1,49 @@
 import { Puppet } from "./puppet";
+import { TimelineBound } from "./types";
 
-export class Timeline {
-  private isPlaying: boolean = false;
-  private startTimestamp?: number;
-  private elapsedTimestamp: number = 0;
-  private puppets: Puppet[];
-  childTimelines: Timeline[];
+const NOT_PLAYING = -1;
 
-  constructor (
-    private readonly parent: Timeline = undefined,
-    private readonly delayMs: number = 0
-  ) {
-    this.puppets = [];
-    this.childTimelines = [];
+export class Timeline implements TimelineBound {
+  private startTimestamp: number = NOT_PLAYING;
+  private puppets: Puppet<any>[] = [];
+  public elapsedMs: number = NOT_PLAYING;
+
+  constructor (private isPlaying: boolean = true) {
+    window.requestAnimationFrame(this.onAnimationFrame);
   }
 
   get timeMs () {
-    return this.elapsedTimestamp;
+    return this.elapsedMs;
   }
 
   onAnimationFrame = (timestamp: DOMHighResTimeStamp) => {
     if (this.isPlaying) {
-        if (this.startTimestamp === undefined) {
-            this.startTimestamp = timestamp;
-          }
-          const elapsedTimestamp = timestamp - this.startTimestamp;
-          this.elapsedTimestamp = elapsedTimestamp;
-      
-          for (let puppet of this.puppets) {
-            puppet.update(elapsedTimestamp);
-          }
+        if (this.startTimestamp === NOT_PLAYING) {
+          this.startTimestamp = timestamp;
+          this.seek(0);
+        }
+        const elapsedMs = timestamp - this.startTimestamp;
+        this.elapsedMs = elapsedMs;
+        this.update(elapsedMs);
     }
 
-    if (this.parent === undefined) {
-      window.requestAnimationFrame(this.onAnimationFrame);
-    }
-  };
+    window.requestAnimationFrame(this.onAnimationFrame);
+  }
 
-  add (puppet: Puppet) {
+  add (puppet: Puppet<any>) {
     this.puppets.push(puppet);
   }
 
   play () {
     this.isPlaying = true;
-    delete this.startTimestamp;
-    this.seek(0);
-    setTimeout(() => {
-      window.requestAnimationFrame(this.onAnimationFrame);
-    }, this.delayMs);
+    this.startTimestamp = NOT_PLAYING;
   }
 
-  seek (timeMs: number = 0) {
-    for (let puppet of this.puppets) {
-      puppet.seek(timeMs);
-    }
+  seek (elapsedMs: number) {
+    this.puppets.forEach(puppet => puppet.seek(elapsedMs));
+  }
+
+  update (elapsedMs: number) {
+    this.puppets.forEach(puppet => puppet.update(elapsedMs));
   }
 }

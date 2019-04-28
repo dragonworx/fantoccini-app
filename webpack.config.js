@@ -8,9 +8,6 @@ module.exports = {
     devtool: "source-map",
     resolve: {
         extensions: [".ts", ".tsx", ".js", ".json"],
-        alias: {
-            fantoccini: __dirname + '/src/fantoccini',
-        }
     },
     module: {
         rules: [
