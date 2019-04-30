@@ -32,31 +32,37 @@ export class Puppet<TypeOfPuppet> implements TimelineBound {
   seek (elapsedMs: number) {
     for (let [key,] of this.channels) {
         this
-            .getActiveChannel(key)
+            .getActiveChannel(key) // TODO: keep this channel stack idea?
             .seek(elapsedMs);
     }
+    (this.target as any).style.display = 'block';
   }
 
   update (elapsedMs: number) {
     for (let [key, ] of this.channels) {
+        // update channel with currentValue
         const channel = this.getActiveChannel(key);
         channel.update(elapsedMs);
+        const currentValue = channel.value;
+        // update target through string with currentValue
         const string = this.strings.get(key);
-        string.value = channel.value;
+        string.value = currentValue;
+        // console.log({ elapsedMs, currentValue });
     }
   }
 
   play (clip: Clip) {
     clip.keys().forEach(key => {
         if (!this.strings.has(key)) {
-            // lazy-init string if first use
+            // polymorphic lazy-init <string> if first use
             const string = this.createString(key);
             this.addString(key, string);
         }
-        // put clip channel data on top
+        // put clip channel data on top ~ TODO: replace? use clip collection instead?
         this.channels
             .get(key)
             .push(clip.channel(key));
+        console.log('start');
     });
   }
 }

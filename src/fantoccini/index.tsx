@@ -5,3 +5,4 @@ export * from './keyframe';
 export * from './channel';
 export * from './clip';
 export * from './player';
+export * from './util/easing';
