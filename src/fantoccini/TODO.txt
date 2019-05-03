@@ -1,2 +1,3 @@
-- repeat
-- interpolation on/off
+- fps
+- repeat, repeatDirection - backwards
+- channel stack behavior on channel end not repeat

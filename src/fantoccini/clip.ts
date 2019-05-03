@@ -1,7 +1,14 @@
-import { Channel, ChannelOptions } from "./channel";
+import { Channel } from "./channel";
+import { PlaybackOptions } from './types';
 
 export class Clip {
   protected readonly channels: Map<string, Channel<any>> = new Map();
+
+  constructor (defaultChannels: {[key: string]: any}) {
+    Object.keys(defaultChannels).forEach((key: string, value: any) => {
+      this.addChannel(key, value);
+    });
+  }
 
   get duration () {
     let max = 0;
@@ -19,7 +26,7 @@ export class Clip {
     return this.channels.get(key);
   }
 
-  addChannel (key: string, defaultValue: any, options?: ChannelOptions) {
+  addChannel (key: string, defaultValue: any, options?: PlaybackOptions) {
     const channel = new Channel(key, defaultValue, options);
     this.channels.set(key, channel);
     return channel;

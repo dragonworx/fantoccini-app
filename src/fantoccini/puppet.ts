@@ -3,7 +3,7 @@ import { PuppetString } from "./string";
 import { TimelineBound } from "./types";
 import { Channel } from "./channel";
 
-export class Puppet<TypeOfPuppet> implements TimelineBound {
+export abstract class Puppet<TypeOfPuppet> implements TimelineBound {
   protected readonly strings: Map<string, PuppetString<any, any>> = new Map;
   protected readonly channels: Map<string, Channel<any>[]> = new Map;
 
@@ -43,7 +43,7 @@ export class Puppet<TypeOfPuppet> implements TimelineBound {
         // update channel with currentValue
         const channel = this.getActiveChannel(key);
         channel.update(elapsedMs);
-        const currentValue = channel.value;
+        const currentValue = channel.currentValue;
         // update target through string with currentValue
         const string = this.strings.get(key);
         string.value = currentValue;

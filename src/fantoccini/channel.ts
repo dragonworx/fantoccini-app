@@ -1,28 +1,25 @@
 import { Keyframe } from './keyframe';
-import { TimelineBound } from './types';
+import { TimelineBound, PlaybackOptions, RepeatDirection } from './types';
 import { EasingFn } from './util/easing';
 
 const NOT_PLAYING = -1;
 const num = (arg: any) => arg as number;
 const toNum = (arg: number) => parseFloat(arg.toFixed(2));
 
-export interface ChannelOptions {
-    loop?: boolean;
-}
-
-export const defaultOptions: ChannelOptions = {
-    loop: false,
+export const defaultOptions: PlaybackOptions = {
+    repeat: false,
+    repeatDirection: RepeatDirection.Backward,
 };
 
 export class Channel<TypeOfChannel> implements TimelineBound {
     public readonly keyframes: Keyframe<TypeOfChannel>[] = [];
-    public currentIndex: number = -1;
-    public options: ChannelOptions;
+    public currentKeyframeIndex: number = -1;
+    public options: PlaybackOptions;
     public readonly defaultValue: TypeOfChannel;
-    public value: TypeOfChannel;
+    public currentValue: TypeOfChannel;
 
-    constructor (readonly key: string, defaultValue: TypeOfChannel, options: ChannelOptions = defaultOptions) {
-        this.value = this.defaultValue = defaultValue;
+    constructor (readonly key: string, defaultValue: TypeOfChannel, options: PlaybackOptions = defaultOptions) {
+        this.currentValue = this.defaultValue = defaultValue;
         this.options = options;
     }
 
@@ -44,7 +41,7 @@ export class Channel<TypeOfChannel> implements TimelineBound {
     }
 
     get fromValue (): number {
-        const { keyframes, currentIndex } = this;
+        const { keyframes, currentKeyframeIndex: currentIndex } = this;
         if (currentIndex === 0) {
             return num(this.defaultValue);
         } else {
@@ -53,7 +50,7 @@ export class Channel<TypeOfChannel> implements TimelineBound {
     }
 
     get toValue (): number {
-        const { keyframes, currentIndex } = this;
+        const { keyframes, currentKeyframeIndex: currentIndex } = this;
         if (currentIndex === 0) {
             return num(keyframes[0].value);
         } else {
@@ -62,22 +59,22 @@ export class Channel<TypeOfChannel> implements TimelineBound {
     }
 
     get isOnFirstFrame (): boolean {
-        return this.currentIndex === 0;
+        return this.currentKeyframeIndex === 0;
     }
 
     get isOnLastFrame (): boolean {
-        return this.currentIndex === this.keyframes.length - 1;
+        return this.currentKeyframeIndex === this.keyframes.length - 1;
     }
 
     get currentKeyframe(): Keyframe<any> {
-        return this.keyframes[this.currentIndex];
+        return this.keyframes[this.currentKeyframeIndex];
     }
 
     get nextKeyframe (): Keyframe<any> | undefined {
         if (this.isOnLastFrame) {
-            return this.options.loop ? this.keyframes[0] : undefined;
+            return this.options.repeat ? this.keyframes[0] : undefined;
         } else {
-            return this.keyframes[this.currentIndex + 1];
+            return this.keyframes[this.currentKeyframeIndex + 1];
         }
     }
 
@@ -89,7 +86,6 @@ export class Channel<TypeOfChannel> implements TimelineBound {
         const { isEmpty, keyframes, lastKeyframe } = this;
         const keyframe = new Keyframe(durationMs, value, easing);
         if (!isEmpty) {
-            // TODO: update if keyframe array changes
             keyframe.timeMs = lastKeyframe.timeMs + lastKeyframe.durationMs;
         }
         keyframes.push(keyframe);
@@ -115,15 +111,15 @@ export class Channel<TypeOfChannel> implements TimelineBound {
     }
 
     clippedTimeMs (timeMs: number) {
-        if (this.currentIndex === NOT_PLAYING) {
+        if (this.currentKeyframeIndex === NOT_PLAYING) {
             return timeMs;
         }
-        return this.options.loop ? timeMs % this.durationMs : timeMs;
+        return this.options.repeat ? timeMs % this.durationMs : timeMs;
     }
 
     seek (elapsedMs: number) {
         const timeMs = this.clippedTimeMs(elapsedMs);
-        this.currentIndex = this.getKeyframeIndexAt(timeMs);
+        this.currentKeyframeIndex = this.getKeyframeIndexAt(timeMs);
     }
 
     update (elapsedMs: number) {
@@ -140,32 +136,34 @@ export class Channel<TypeOfChannel> implements TimelineBound {
             // });
 
             if (completed >= 1) {
-                this.value = toValue as unknown as any;
-                this.gotoNextFrame();
+                this.currentValue = toValue as unknown as any;
+                this.gotoNextKeyframe();
                 return;
             }
 
             if (currentKeyframe.easing !== undefined && typeof currentKeyframe.value === 'number') {
                 let easedParametric = currentKeyframe.easedParametric(completed);
-                this.value = (fromValue + ((toValue - fromValue) * easedParametric)) as any;
+                this.currentValue = (fromValue + ((toValue - fromValue) * easedParametric)) as any;
             } else {
-                this.value = fromValue as unknown as TypeOfChannel;
+                this.currentValue = fromValue as unknown as TypeOfChannel;
             }
+        } else {
+            this.currentValue = this.defaultValue;
         }
     }
 
-    gotoNextFrame () {
+    gotoNextKeyframe () {
         if (this.isOnLastFrame) {
-            if (this.options.loop) {
-                this.currentIndex = 0;
-                console.log({ key: this.key, gotoNext: this.currentIndex, type: 'rewind' });
+            if (this.options.repeat) {
+                this.currentKeyframeIndex = 0;
+                console.log({ key: this.key, gotoNext: this.currentKeyframeIndex, type: 'rewind' });
                 return;
             }
             // TODO: fire done event (think about events)
             // console.log({ key: this.key, gotoNext: this.currentIndex, type: 'finish' });
         } else {
-            this.currentIndex++;
-            console.log({ key: this.key, gotoNext: this.currentIndex, type: 'normal' });
+            this.currentKeyframeIndex++;
+            console.log({ key: this.key, gotoNext: this.currentKeyframeIndex, type: 'normal' });
         }
     }
 }

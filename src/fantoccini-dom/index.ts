@@ -39,7 +39,18 @@ const numericStringKeys = [
     'opacity',
 ];
 
+export interface DomPuppetStrings {
+    left: number;
+    top: number;
+    opacity: number;
+}
+
 export class DomPuppet extends Puppet<HTMLElement> {
+    constructor (target: HTMLElement | string) {
+        const element = typeof target === 'string' ? document.getElementById(target) : target;
+        super(element);
+    }
+
     createString (key: string) {
         const { target } = this;
         if (targetPixelStringKeys.indexOf(key) > -1) {
